@@ -1,0 +1,1 @@
+{"version":3,"sources":["main/6.physics/style.css"],"names":[],"mappings":"AAAA;AACA;AACA;AACA;AACA;AACA;AACA","file":"style.c4b9251a.css","sourceRoot":"..\\src","sourcesContent":["*{\r\n\tmargin: 0;\r\n\tpadding: 0;\r\n}\r\nbody {\r\n  background-color: rgb(36, 58, 66);\r\n}"]}
