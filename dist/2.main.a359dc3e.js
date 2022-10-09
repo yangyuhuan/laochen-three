@@ -63009,7 +63009,7 @@ const endShapeContactEvent = {
   shapeA: null,
   shapeB: null
 };
-},{}],"main/6.physics/1.main.js":[function(require,module,exports) {
+},{}],"main/6.physics/2.main.js":[function(require,module,exports) {
 "use strict";
 
 var THREE = _interopRequireWildcard(require("three"));
@@ -63072,7 +63072,18 @@ var sphereBody = new CANNON.Body({
   material: sphereWorldMaterial
 }); //将物体添加至物理世界
 
-world.addBody(sphereBody); // 灯光
+world.addBody(sphereBody); //物理世界创建地面
+
+var floorShape = new CANNON.Plane();
+var floorBody = new CANNON.Body(); //当质量为0的时候,可以使得物体保持不动
+
+floorBody.mass = 0;
+floorBody.addShape(floorShape); //地面位置
+
+floorBody.position.set(0, -5, 0); //旋转地面的位置
+
+floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+world.addBody(floorBody); // 灯光
 // 环境光
 
 var ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // soft white light
@@ -63335,5 +63346,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","main/6.physics/1.main.js"], null)
-//# sourceMappingURL=/1.main.d2359d24.js.map
+},{}]},{},["../node_modules/parcel-bundler/src/builtins/hmr-runtime.js","main/6.physics/2.main.js"], null)
+//# sourceMappingURL=/2.main.a359dc3e.js.map
