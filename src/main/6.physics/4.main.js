@@ -32,7 +32,7 @@ function createCube() {
     cubeGeometry,
     cubeMaterial
   )
-  sphere.castShadow = true;
+  cube.castShadow = true;
   scene.add(cube);
 
   //创建物理cube形状
@@ -54,7 +54,7 @@ function createCube() {
 
   //将物体添加到物理世界
   world.addBody(cubeBody);
-  //添加监听碰撞事件
+
 
 //添加监听碰撞事件
 function HitEvent(e){
@@ -62,10 +62,11 @@ function HitEvent(e){
   const impactStrength = e.contact.getImpactVelocityAlongNormal();
   if(impactStrength > 2) {
     hitSound.currentTime = 0;
+    hitSound.volume = impactStrength / 12;
     hitSound.play();
   }
 }
-  sphereBody.addEventListener('collide',HitEvent)
+  cubeBody.addEventListener('collide',HitEvent)
   cubeArr.push({
     mesh: cube,
     body: cubeBody,
@@ -89,22 +90,9 @@ scene.add(floor)
 //4.创建物理世界
 const world = new CANNON.World();
 world.gravity.set(0, -9.8, 0);
-//创建物理小球形状
-const sphereShape = new CANNON.Sphere(1);
-//设置物理材质
-const sphereWorldMaterial = new CANNON.Material('sphere');
-//创建物理世界的物体
-const sphereBody = new CANNON.Body({
-  shape: sphereShape,
-  position: new CANNON.Vec3(0, 0, 0),
-  //小球质量
-  mass: 1,
-  //物理材质
-  material: sphereWorldMaterial
-})
-//将物体添加至物理世界
-world.addBody(sphereBody);
 
+// 创建击打声音
+const hitSound = new Audio("assets/metalHit.mp3");
 
 //物理世界创建地面
 const floorShape = new CANNON.Plane();
@@ -126,7 +114,7 @@ world.addBody(floorBody);
 
 //设置两种材质碰撞的参数
 const defaultContactMaterial = new CANNON.ContactMaterial(
-  sphereWorldMaterial,
+  cubeWorldMaterial,
   floorMaterial,
   {
     //摩擦力
@@ -137,7 +125,8 @@ const defaultContactMaterial = new CANNON.ContactMaterial(
 );
 //将材质的关联设置添加到物理世界
 world.addContactMaterial(defaultContactMaterial)
-
+// 设置世界碰撞的默认材料，如果材料没有设置，都用这个
+world.defaultContactMaterial = defaultContactMaterial;
 
 //5.添加环境光和平行光
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -178,7 +167,12 @@ function render(){
   //更新物理引擎里世界的物体
   world.step(1 / 120, deltatime);
 
-  sphere.position.copy(sphereBody.position);
+   //cube.position.copy(cubeBody.position);
+   cubeArr.forEach((item) => {
+    item.mesh.position.copy(item.body.position);
+    // 设置渲染的物体跟随物理的物体旋转
+    item.mesh.quaternion.copy(item.body.quaternion);
+  });
 
   renderer.render(scene, camera);
   //渲染下一帧的时候就会调用render函数

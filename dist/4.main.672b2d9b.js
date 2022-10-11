@@ -53908,7 +53908,7 @@ function createCube() {
   var cubeGeometry = new THREE.BoxBufferGeometry(1, 1, 1);
   var cubeMaterial = new THREE.MeshStandardMaterial();
   var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-  sphere.castShadow = true;
+  cube.castShadow = true;
   scene.add(cube); //创建物理cube形状
 
   var cubeShape = new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)); //创建物理世界的物体
@@ -53924,7 +53924,6 @@ function createCube() {
   ); //将物体添加到物理世界
 
   world.addBody(cubeBody); //添加监听碰撞事件
-  //添加监听碰撞事件
 
   function HitEvent(e) {
     //获取碰撞的强度
@@ -53932,11 +53931,12 @@ function createCube() {
 
     if (impactStrength > 2) {
       hitSound.currentTime = 0;
+      hitSound.volume = impactStrength / 12;
       hitSound.play();
     }
   }
 
-  sphereBody.addEventListener('collide', HitEvent);
+  cubeBody.addEventListener('collide', HitEvent);
   cubeArr.push({
     mesh: cube,
     body: cubeBody
@@ -53951,22 +53951,9 @@ floor.receiveShadow = true;
 scene.add(floor); //4.创建物理世界
 
 var world = new CANNON.World();
-world.gravity.set(0, -9.8, 0); //创建物理小球形状
+world.gravity.set(0, -9.8, 0); // 创建击打声音
 
-var sphereShape = new CANNON.Sphere(1); //设置物理材质
-
-var sphereWorldMaterial = new CANNON.Material('sphere'); //创建物理世界的物体
-
-var sphereBody = new CANNON.Body({
-  shape: sphereShape,
-  position: new CANNON.Vec3(0, 0, 0),
-  //小球质量
-  mass: 1,
-  //物理材质
-  material: sphereWorldMaterial
-}); //将物体添加至物理世界
-
-world.addBody(sphereBody); //物理世界创建地面
+var hitSound = new Audio("assets/metalHit.mp3"); //物理世界创建地面
 
 var floorShape = new CANNON.Plane();
 var floorBody = new CANNON.Body();
@@ -53981,14 +53968,16 @@ floorBody.position.set(0, -5, 0); //旋转地面的位置
 floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
 world.addBody(floorBody); //设置两种材质碰撞的参数
 
-var defaultContactMaterial = new CANNON.ContactMaterial(sphereWorldMaterial, floorMaterial, {
+var defaultContactMaterial = new CANNON.ContactMaterial(cubeWorldMaterial, floorMaterial, {
   //摩擦力
   friction: 0.1,
   //弹性
   restitution: 0.7
 }); //将材质的关联设置添加到物理世界
 
-world.addContactMaterial(defaultContactMaterial); //5.添加环境光和平行光
+world.addContactMaterial(defaultContactMaterial); // 设置世界碰撞的默认材料，如果材料没有设置，都用这个
+
+world.defaultContactMaterial = defaultContactMaterial; //5.添加环境光和平行光
 
 var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
@@ -54019,8 +54008,13 @@ var clock = new THREE.Clock();
 function render() {
   var deltatime = clock.getDelta(); //更新物理引擎里世界的物体
 
-  world.step(1 / 120, deltatime);
-  sphere.position.copy(sphereBody.position);
+  world.step(1 / 120, deltatime); //cube.position.copy(cubeBody.position);
+
+  cubeArr.forEach(function (item) {
+    item.mesh.position.copy(item.body.position); // 设置渲染的物体跟随物理的物体旋转
+
+    item.mesh.quaternion.copy(item.body.quaternion);
+  });
   renderer.render(scene, camera); //渲染下一帧的时候就会调用render函数
 
   requestAnimationFrame(render);
@@ -54066,7 +54060,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "65119" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "52201" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
